@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Unit tests (no dependencies needed)
+        run: npm test
+
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: posdemo
+          POSTGRES_USER: posdemo
+          POSTGRES_PASSWORD: ci_only
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U posdemo -d posdemo"
+          --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://posdemo:ci_only@localhost:5432/posdemo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --omit=optional --no-audit --no-fund
+
+      - name: Create schema, seed, views
+        run: |
+          for f in db/01_schema.sql db/02_seed.sql db/03_views.sql; do
+            psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+
+      - name: Import sample exports
+        run: npm run import:samples
+
+      - name: Reconcile (report totals must equal source files)
+        run: npm run check
+
+      - name: Re-import is idempotent
+        run: |
+          node src/cli.js import sales samples/sales_DEMO_2026-08_part2.csv --company DEMO
+          node src/cli.js import purchase samples/purchase_DEMO_2026-08.csv --company DEMO
+          npm run check
+
+      - name: Guards reject bad input without touching data
+        run: |
+          # (a bare "! cmd" would not fail the step under bash -e, so check explicitly)
+          if node src/cli.js import purchase samples/purchase_DEMO2_2026-08.csv --company DEMO; then
+            echo "wrong-company file was accepted"; exit 1
+          fi
+          if node src/cli.js import sales samples/bad/sales_summary_wrong_report.csv --company DEMO; then
+            echo "summary report was accepted"; exit 1
+          fi
+          npm run check
