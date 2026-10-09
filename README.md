@@ -1,6 +1,6 @@
 # pos-sales-etl-demo
 
-🇹🇭 [อ่านสรุปภาษาไทย](#สรุปภาษาไทย)
+🇹🇭 [อ่านสรุป](#สรุป)
 
 Import messy Thai POS / ERP report exports into PostgreSQL, and prove — to the satang —
 that "sale in vs sale out" reports tie back to the source files.
