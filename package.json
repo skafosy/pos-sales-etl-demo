@@ -1,0 +1,21 @@
+{
+  "name": "pos-sales-etl-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Import messy Thai POS/ERP report exports into PostgreSQL and reconcile sales vs purchases to the satang.",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "generate": "node scripts/generate-samples.js",
+    "import:samples": "node src/cli.js import sales samples/sales_DEMO_2026-08_part1.csv samples/sales_DEMO_2026-08_part2.csv --company DEMO --no-refresh && node src/cli.js import sales samples/sales_DEMO2_2026-08.csv --company DEMO2 --no-refresh && node src/cli.js import purchase samples/purchase_DEMO_2026-08.csv --company DEMO --no-refresh && node src/cli.js import purchase samples/purchase_DEMO2_2026-08.csv --company DEMO2",
+    "check": "node src/cli.js check --expected samples/expected_totals.json"
+  },
+  "dependencies": {
+    "pg": "^8.13.0",
+    "pg-copy-streams": "^6.0.6"
+  },
+  "optionalDependencies": {
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  }
+}

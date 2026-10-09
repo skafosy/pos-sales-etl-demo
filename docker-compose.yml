@@ -1,0 +1,31 @@
+# Local demo only. Ports are bound to 127.0.0.1 so nothing is exposed to the LAN.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: posdemo
+      POSTGRES_USER: posdemo
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-posdemo_local_only}
+      TZ: Asia/Bangkok
+    ports:
+      - "127.0.0.1:5433:5432"        # 5433 so it never clashes with a local PostgreSQL
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d:ro   # 01_schema, 02_seed, 03_views run on first start
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U posdemo -d posdemo"]
+      interval: 5s
+      retries: 10
+
+  metabase:
+    image: metabase/metabase:latest
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      JAVA_TIMEZONE: Asia/Bangkok
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
