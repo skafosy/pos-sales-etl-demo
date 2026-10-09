@@ -135,7 +135,7 @@ test/                 node:test suites (run without a database)
 docs/CASE-STUDIES.md  the production incidents behind each design decision
 ```
 
-## สรุปภาษาไทย
+## สรุป
 
 โปรเจกต์ตัวอย่างนี้เขียนขึ้นใหม่ทั้งหมดจากงานจริงที่ผมทำ คือนำไฟล์รายงานที่ export จากระบบ ERP/POS
 เข้า PostgreSQL แล้วทำรายงานซื้อเข้าเทียบขายออกใน Metabase โดยยอดต้องตรงกับรายงานต้นทางทุกสตางค์
